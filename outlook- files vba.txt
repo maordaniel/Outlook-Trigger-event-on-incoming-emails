@@ -1,0 +1,56 @@
+Private WithEvents Items As Outlook.Items
+
+Private Sub Application_Startup()
+  Dim olApp As Outlook.Application
+  Dim objNS As Outlook.NameSpace
+  Set olApp = Outlook.Application
+  Set objNS = olApp.GetNamespace("MAPI")
+  ' default local Inbox
+  Set Items = objNS.GetDefaultFolder(olFolderInbox).Items
+End Sub
+Private Sub Items_ItemAdd(ByVal item As Object)
+
+  On Error GoTo ErrorHandler
+  Dim Msg As Outlook.MailItem
+  Dim sFileType As String
+  Dim Atmt As Attachment
+  Dim FileName As String
+  Dim fso, WheretosaveFolder
+  Dim FormatTime
+  FormatTime = Format(Now(), "hhmmssddmmyyyy")
+    
+  Set fso = CreateObject("Scripting.FileSystemObject")
+
+  
+  WheretosaveFolder = "C:\Users\ASUS\Desktop\Maor"
+  
+  If TypeName(item) = "MailItem" Then
+    Set Msg = item
+    
+    For Each Atmt In Msg.Attachments
+    
+    sFileType = LCase$(Right$(Atmt.FileName, 4))
+    
+    Select Case sFileType
+    ' Add additional file types below ".doc", "docx", ".xls"
+        Case ".pdf"
+            
+            
+            FileName = WheretosaveFolder & "\" & fso.GetBaseName(Atmt.FileName) & FormatTime & ".pdf"
+            ' ------------------------------------------------------
+            Atmt.SaveAsFile FileName
+            End Select
+    
+    
+    Next Atmt
+  End If
+ProgramExit:
+  Exit Sub
+ErrorHandler:
+  MsgBox Err.Number & " - " & Err.Description
+  Resume ProgramExit
+End Sub
+
+
+
+
